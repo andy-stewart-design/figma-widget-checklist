@@ -2,7 +2,8 @@ const { widget } = figma;
 const { AutoLayout } = widget;
 import ChecklistItem from "../ChecklistItem/index";
 import Header from "../Header/index";
-import { defaultChecklist } from "../../data/checklist";
+import { getProgress } from "../../utils/get-progress";
+import { type Checklist, defaultChecklist } from "../../data/checklist";
 
 interface PropTypes {
   title: string;
@@ -15,31 +16,60 @@ export default function ChecklistGroup({
   items,
   updateChecked,
 }: PropTypes) {
-  const numItems = items.length;
-  const numCheckedItems = items.filter((item) => item.checked).length;
-  const percentComplete = Math.round((numCheckedItems / numItems) * 100);
+  const percentComplete = getProgress(items);
+
+  const tasks = items.filter((item) => !item.subgroup);
+  const subtasks = items
+    .filter((item) => item.subgroup)
+    .reduce((acc: Record<string, Checklist>, item) => {
+      const key = item.subgroup;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    }, {});
 
   return (
-    <AutoLayout
-      name="Checklist Group"
-      direction="vertical"
-      fill="#FFFFFF"
-      spacing={28}
-    >
+    <AutoLayout name="Checklist Group" direction="vertical" spacing={28}>
       <Header title={title} percentComplete={percentComplete} size="md" />
       <AutoLayout
         name="Checklist Group Items"
         direction="vertical"
-        fill="#FFFFFF"
         spacing={12}
       >
-        {items.map((item) => {
+        {tasks.map((item) => {
+          const subs = subtasks[item.title];
           return (
-            <ChecklistItem
+            <AutoLayout
               key={item.title}
-              item={item}
-              updateChecked={updateChecked}
-            />
+              name="Checklist Group Items"
+              direction="vertical"
+              spacing={12}
+            >
+              <ChecklistItem item={item} updateChecked={updateChecked} />
+              {subs && (
+                <AutoLayout
+                  name="Subtasks"
+                  direction="vertical"
+                  spacing={12}
+                  padding={{
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 48,
+                  }}
+                >
+                  {subs.map((subitem) => (
+                    <ChecklistItem
+                      key={subitem.title}
+                      item={subitem}
+                      updateChecked={updateChecked}
+                    />
+                  ))}
+                </AutoLayout>
+              )}
+            </AutoLayout>
           );
         })}
       </AutoLayout>
