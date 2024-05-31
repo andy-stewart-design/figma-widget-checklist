@@ -1,11 +1,12 @@
 const { widget } = figma;
-const { AutoLayout, Text, SVG } = widget;
-import { defaultChecklist } from "../../data/checklist";
+const { AutoLayout, Text, SVG, Span } = widget;
+import { FlatChecklistItem } from "../../data/schema";
+import Markdown from "../Markdown";
 import { iconTodo, iconDone, iconInProgress } from "../icons";
 
 interface PropTypes {
-  item: (typeof defaultChecklist)[number];
-  updateChecked: (item: (typeof defaultChecklist)[number]) => void;
+  item: FlatChecklistItem;
+  updateChecked: (item: FlatChecklistItem) => void;
 }
 
 export default function ChecklistItem({ item, updateChecked }: PropTypes) {
@@ -21,8 +22,8 @@ export default function ChecklistItem({ item, updateChecked }: PropTypes) {
       <AutoLayout
         name="Checklist Item"
         overflow="visible"
+        width="fill-parent"
         spacing={24}
-        width={900}
         verticalAlignItems="start"
         padding={{
           top: 0,
@@ -30,7 +31,7 @@ export default function ChecklistItem({ item, updateChecked }: PropTypes) {
           bottom: 12,
           left: 0,
         }}
-        opacity={item.disabled ? 0.5 : 1}
+        opacity={item.disabled ? 0.3 : 1}
       >
         <SVG
           name="Checklist Icon"
@@ -44,18 +45,12 @@ export default function ChecklistItem({ item, updateChecked }: PropTypes) {
           spacing={8}
           width="fill-parent"
         >
-          <Text
-            name="Title"
-            fill="#000"
-            fontFamily="Inter"
-            fontSize={20}
-            fontWeight={500}
-          >
-            {item.title}
-          </Text>
-          <Text name="Description" fill="#555" fontFamily="Inter">
-            {item.note}
-          </Text>
+          <Markdown text={item.title} />
+          {item.note && (
+            <Text name="Description" fill="#555" fontFamily="Inter">
+              {item.note}
+            </Text>
+          )}
         </AutoLayout>
       </AutoLayout>
     </>
