@@ -12,6 +12,7 @@ interface ChecklistItem {
   title: string;
   note?: string;
   required: boolean;
+  subTasks?: Array<ChecklistItem>;
 }
 
 const checklistData: ChecklistData = [
